@@ -1,0 +1,43 @@
+sudo nano /etc/netplan/00-installer-config.yaml
+network:
+  ethernets:
+    enp0s3:
+      dhcp4: no
+      addresses:
+        - 192.168.1.100/24
+      gateway4: 192.168.1.1
+      nameservers:
+        addresses:
+          - 8.8.8.8
+          - 1.1.1.1
+  version: 2
+sudo netplan apply
+ip a
+sudo apt update && sudo apt upgrade -y
+//Инсталиране на Docker чрез Vagrant
+Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/jammy64"  
+  config.vm.network "private_network", ip: "192.168.1.100"
+  config.vm.provision "shell", inline: <<-SHELL
+    sudo apt-get update
+    sudo apt-get upgrade -y
+    sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+    sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+    sudo apt-get update
+    sudo apt-get install -y docker-ce
+    sudo usermod -aG docker ${USER}
+  SHELL
+end
+ssh username@192.168.1.100
+docker pull alpine
+docker run -it alpine /bin/sh
+docker images
+REPOSITORY          TAG         IMAGE ID      CREATED       SIZE
+alpine              latest      d6e46aa2470d  2 days ago    5.6MB
+ubuntu              latest      1318b700e415  4 days ago    72.9MB
+linuxserver/smokeping latest    53d0e4d0a82e  1 week ago    308MB
+docker ps
+CONTAINER ID   IMAGE                  COMMAND        CREATED          STATUS          PORTS                  NAMES
+e9bb0fca1d3b   linuxserver/smokeping  "/init"        10 minutes ago   Up 10 minutes   0.0.0.0:8080->80/tcp   smokeping
+
